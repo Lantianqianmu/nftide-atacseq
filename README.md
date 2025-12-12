@@ -17,6 +17,7 @@ bedtools | 2.31.0
 picard | 3.4.0
 macs2 | 2.2.9.1
 bedGraphToBigWig | 2.10
+
 If genome coverage files (.bw) are desired, please install bedGraphToBigWig manually, and get the chromsize file from USCS (download or using fetchChromSizes).
 
 ## Usage ##
