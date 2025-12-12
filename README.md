@@ -52,8 +52,8 @@ where:
 __--samplesheet.csv__ must have 3 columns named "sample", "fastq_1" and "fastq_2".  
 __--genomeDir__ is the bowtie2 index.  
 __-output-dir__ is the output directory.  
-If __run_macs2__ is set to true, __gsize__ must be set as input for the __-g__ parameter of `macs2 callpeak`.  
-If __make_bw__ is set to true, __chromsize__ must be set as input for `bedtools genomecov` and `bedGraphToBigWig`.
+If __--run_macs2__ is set to true, __--gsize__ must be set as input for the __-g__ parameter of `macs2 callpeak`.  
+If __--make_bw__ is set to true, __--chromsize__ must be set as input for `bedtools genomecov` and `bedGraphToBigWig`.
 
 By default, the pipeline allows 2 samples to be processed in parallel. To change this behavior, modify _maxForks_ in __nextflow.config__.
 
