@@ -58,7 +58,8 @@ If __--make_bw__ is set to true, __--chromsize__ must be set as input for `bedto
 By default, the pipeline allows 2 samples to be processed in parallel. To change this behavior, modify _maxForks_ in __nextflow.config__.
 
 ## Expected output ##
-The pipeline creates subfolders (named by samples in the samplesheet) in -output-dir.
+The pipeline creates subfolders (named by samples in the samplesheet) in -output-dir.  
+__Note__: the start and end coordinates of *_fragments.tsv files have been shifted by +4/-5 bp.
 
 
 
