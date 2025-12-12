@@ -49,11 +49,11 @@ nextflow atacseq_pe.nf \
   -with-timeline outdir/nf_atac_timeline.html
 ```
 where:
-__--samplesheet.csv__ must have 3 columns named "sample", "fastq_1" and "fastq_2".  
+__--samplesheet.csv__ must have 3 columns named "sample", "fastq_1" and "fastq_2". Refer to samplesheet.csv in the repository.  
 __--genomeDir__ is the bowtie2 index.  
 __-output-dir__ is the output directory.  
 If __--run_macs2__ is set to true, __--gsize__ must be set as input for the __-g__ parameter of `macs2 callpeak`.  
-If __--make_bw__ is set to true, __--chromsize__ must be set as input for `bedtools genomecov` and `bedGraphToBigWig`.
+If __--make_bw__ is set to true, __--chromsize__ must be set as input for `bedtools genomecov` and `bedGraphToBigWig`. Refer to hg38.chrom.sizes in the repository.  
 
 By default, the pipeline allows 2 samples to be processed in parallel. To change this behavior, modify _maxForks_ in __nextflow.config__.
 
