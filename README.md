@@ -8,6 +8,7 @@ The pipeline uses cutadapt to remove nextera adaptors, aligns fastqs with bowtie
 Dependencies  | Version
 ------------- | -------------
 nextflow | 25.10
+openjdk | 17.0.8
 Perl | 5.32.1
 python | 3.10.12
 cutadapt | 4.5
