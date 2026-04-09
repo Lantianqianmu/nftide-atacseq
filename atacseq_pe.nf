@@ -234,7 +234,7 @@ workflow {
     }
     MAKEFRAGMENT(genome_basename, FILTERBAM.out.filtered_bam)
 
-    if(params.run_masc2){
+    if(params.make_bw){
         ch_bw = MAKEBW(genome_basename, MAKEFRAGMENT.out.nofiltfrags)
     }else{
         ch_bw = channel.empty()
