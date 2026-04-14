@@ -18,8 +18,11 @@ bedtools | 2.31.0
 picard | 3.4.0
 macs2 | 2.2.9.1
 bedGraphToBigWig | 2.10
+matplotlib | 3.10.8
+pandas | 3.0.2
+numpy | 2.4.3
 
-If genome coverage files (.bw) are desired, please install bedGraphToBigWig manually, and get the chromsize file from UCSC (download or using fetchChromSizes).
+If genome coverage files (.bw) are desired, please install bedGraphToBigWig manually (or with conda), and get the chromsize file from UCSC (download or using fetchChromSizes).
 
 ## Usage ##
 (1) Create a conda environment with 
@@ -40,6 +43,7 @@ cd nftide-atacseq
 ```
 nextflow atacseq_pe.nf \
   -output-dir outdir \
+  --genome hg38 \
   --genomeDir bowtie2_index \
   --input_csv samplesheet.csv \
   --run_macs2 true \
@@ -50,6 +54,7 @@ nextflow atacseq_pe.nf \
   -with-timeline outdir/nf_atac_timeline.html
 ```
 where:
+__--genome__ gives the prefix of the outputs.  
 __--samplesheet.csv__ must have 3 columns named "sample", "fastq_1" and "fastq_2". Refer to samplesheet.csv in the repository.  
 __--genomeDir__ is the bowtie2 index.  
 __-output-dir__ is the output directory.  
