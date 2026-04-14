@@ -41,7 +41,7 @@ cd nftide-atacseq
 
 (3) Run nextflow pipeline.
 ```
-nextflow atacseq_pe.nf \
+nextflow run atacseq_pe.nf \
   -output-dir outdir \
   --genome hg38 \
   --genomeDir bowtie2_index \
