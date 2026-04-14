@@ -1,17 +1,18 @@
 #!/home/zeemeeuw/miniconda3/envs/joint/bin/nextflow
 
 
-// nextflow atacseq_pe.nf -with-report nf_atac_report.html -with-timeline nf_atac_timeline.html
-// mandatory field: genomeDir, input_csv, gsize, -output-dir
+// nextflow run atacseq_pe.nf -with-report nf_atac_report.html -with-timeline nf_atac_timeline.html -bg
+// nextflow run atacseq_pe.nf -with-report nf_atac_report.html -with-timeline nf_atac_timeline.html -resume
 
-params.genome = "hg38"
-params.genomeBaseDir = "/home/zeemeeuw/data/ref"
+params.genome = "HBV-D"
+params.genomeBaseDir = "/data/xrz/ref"
 params.genomeDir = "${params.genomeBaseDir}/${params.genome}/${params.genome}-bowtie2/${params.genome}"
-params.input_csv = '/home/zeemeeuw/data/nextflow/data/atacseq/samplesheet.csv'
-params.run_masc2 = true
-params.gsize = 'hs'
+params.input_csv = '/data/xrz/charseq/nftide-atacseq/samplesheet.csv'
+params.run_masc2 = false
+//params.gsize = 'hs'
+params.gsize = 3182
 params.make_bw = true
-params.chromsize = '/home/zeemeeuw/data/nextflow/nf_pipe/nftide-atacseq/hg38.chrom.sizes'
+params.chromsize = '/data/xrz/charseq/nftide-atacseq/hg38.chrom.sizes'
 
 
 process CUTADAPT {
@@ -136,7 +137,7 @@ process FILTERBAM {
     script:
 
     """
-    samtools view -b -f 2 -F 1804 -q 30 ${bam} -o ${id}_${genome}_filtered.bam
+    samtools view -b -f 2 -F 1804 -q 10 ${bam} -o ${id}_${genome}_filtered.bam
     """
 
 }
@@ -168,6 +169,7 @@ process MACS2 {
 
 process MAKEFRAGMENT {
     tag "Making fragments from ${bam} with bedtools"
+    errorStrategy 'ignore'
 
     input:
     val genome
@@ -189,6 +191,52 @@ process MAKEFRAGMENT {
     """
 
 }
+
+
+process PLOTSIZE {
+    tag "Plotting fragment length distribution from ${tsv}"
+    errorStrategy 'ignore'
+
+    input:
+    val genome
+    tuple val(id), path(tsv)
+
+    output:
+    tuple val(id), path("*png"), emit: fragsize_plots
+    tuple val(id), path("${id}_${genome}_length_counts.txt"), emit: length_counts
+
+    script:
+
+    """
+    python3 << 'EOF'
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    
+    df = pd.read_csv("${tsv}", sep='\\t', header=None, names=['chr', 'start', 'end'])
+    df['length'] = df['end'] - df['start']
+    
+    length_counts = df['length'].value_counts().sort_index().reset_index()
+    length_counts.columns = ['length', 'count'] 
+    length_counts.to_csv("${id}_${genome}_length_counts.txt", sep='\\t', index=False)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(length_counts['length'], length_counts['count'], color='#8D1616', linewidth=1)
+    
+    plt.xlabel('Fragment Length (bp)')
+    plt.ylabel('Count')
+    plt.title(f'Fragment Length Distribution: ${id}')
+    plt.grid(True, alpha=0.3, linestyle=':')
+    
+    max_len = min(1000, length_counts['length'].max())
+    plt.xlim(0, max_len)
+    
+    plt.tight_layout()
+    plt.savefig("${id}_${genome}_fragment_size.png", dpi=300)
+    plt.close()
+    EOF
+    """ 
+}
+
 
 process MAKEBW {
     tag "Making bw from ${bed}"
@@ -233,6 +281,7 @@ workflow {
         called_peaks = channel.empty()
     }
     MAKEFRAGMENT(genome_basename, FILTERBAM.out.filtered_bam)
+    PLOTSIZE(genome_basename, MAKEFRAGMENT.out.filtfrags)
 
     if(params.make_bw){
         ch_bw = MAKEBW(genome_basename, MAKEFRAGMENT.out.nofiltfrags)
@@ -252,6 +301,8 @@ workflow {
     filtfrags = MAKEFRAGMENT.out.filtfrags
     nofiltfrags = MAKEFRAGMENT.out.nofiltfrags
     bws = ch_bw
+    fragsize_plots = PLOTSIZE.out.fragsize_plots
+    fragsize_txt = PLOTSIZE.out.length_counts
 
 }
 
@@ -283,7 +334,13 @@ output {
     nofiltfrags {
         path { sample, _f1 -> "${sample}/fragments" }
     }
-    bws {
+    fragsize_plots {
         path { sample, _f1 -> "${sample}/fragments" }
+    }
+    fragsize_txt {
+        path { sample, _f1 -> "${sample}/fragments" }
+    }
+    bws {
+        path { sample, _f1 -> "${sample}/bws" }
     }
 }
