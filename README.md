@@ -27,7 +27,7 @@ If genome coverage files (.bw) are desired, please install bedGraphToBigWig manu
 ## Usage ##
 (1) Create a conda environment with 
 ```
-conda create -n nftide-atacseq nextflow=25.10.2 python cutadapt samtools bowtie2 bedtools picard macs2
+conda create -n nftide-atacseq nextflow=25.10.2 python cutadapt samtools bowtie2 bedtools picard macs2 pandas numpy matplotlib ucsc-bedgraphtobigwig
 ``` 
 and activate the environment with  
 ```
