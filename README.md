@@ -61,14 +61,6 @@ nextflow run atacseq_pe.nf \
   -with-report outdir/nf_atac_report.html \
   -with-timeline outdir/nf_atac_timeline.html
 ```
-where:
-__--genome__ gives the prefix of the outputs.  
-__--samplesheet.csv__ must have 3 columns named "sample", "fastq_1" and "fastq_2". Refer to samplesheet.csv in the repository.  
-__--genomeDir__ is the bowtie2 index.  
-__-output-dir__ is the output directory.  
-If __--run_macs2__ is set to true, __--gsize__ must be set as input for the __-g__ parameter of `macs2 callpeak`.  
-If __--make_bw__ is set to true, __--chromsize__ must be set as input for `bedtools genomecov` and `bedGraphToBigWig`. Refer to hg38.chrom.sizes in the repository.  
-
 `-output-dir`: Path to the output directory.  
 `--input_csv`: Path to samplesheet.csv as described in **step (1)**.  
 `--genome`: the genome prefix of the outputs.  
