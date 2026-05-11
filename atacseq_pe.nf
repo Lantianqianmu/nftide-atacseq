@@ -32,6 +32,7 @@ process CUTADAPT {
         -a "CTGTCTCTTATACACATCT" \
         -A "CTGTCTCTTATACACATCT" \
         --pair-filter=any \
+        --overlap 1 \
         -o ${id}_cutadapt_R1.fq.gz \
         -p ${id}_cutadapt_R2.fq.gz \
         ${read1} \
