@@ -22,7 +22,7 @@ matplotlib | 3.10.8
 pandas | 3.0.2
 numpy | 2.4.3
 
-__Critical: new pipeline is using macs3 instead of macs2!__
+__Critical: new pipeline is using macs3 instead of macs2!__  
 If genome coverage files (.bw) are desired, please install bedGraphToBigWig manually (or with conda), and get the chromsize file from UCSC (download or using fetchChromSizes).
 
 ## Installation ##
