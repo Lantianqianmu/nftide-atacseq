@@ -471,7 +471,7 @@ output {
         path { meta, _f1 -> "${meta.id}/peaks" }
     }
     out_frip {
-        path { meta, _f1, _f2 -> "${meta.id}/fragments" }
+        path { meta, _f1, _f2 -> "${meta.id}/qc" }
     }
     filtfrags {
         path { meta, _f1 -> "${meta.id}/fragments" }
@@ -480,16 +480,16 @@ output {
         path { meta, _f1 -> "${meta.id}/fragments" }
     }
     fragsize_plots {
-        path { meta, _f1 -> "${meta.id}/fragments" }
+        path { meta, _f1 -> "${meta.id}/qc" }
     }
     fragsize_txt {
-        path { meta, _f1 -> "${meta.id}/fragments" }
+        path { meta, _f1 -> "${meta.id}/qc" }
     }
     bws {
         path { meta, _f1 -> "${meta.id}/bws" }
     }
     out_tss {
-        path { meta, _f1, _f2 -> "${meta.id}/fragments" }
+        path { meta, _f1, _f2 -> "${meta.id}/qc" }
     }
 
 }
