@@ -81,8 +81,9 @@ The pipeline creates subfolders (named by samples in the samplesheet) in -output
 `cutadapt`: Trimmed fastqs.  
 `bowtie2`: Aligned (and filtered) bams. PCR duplicates are marked with picard.  
 `peaks`: Results of peak calling.  
-`fragments`: Fragment files, and fraglen/tss/frip qc metrics. __Note__: the start and end coordinates of *_fragments.tsv files have been shifted by +4/-5 bp.  
+`fragments`: Fragment files. __Note__: the start and end coordinates of *_fragments.tsv files have been shifted by +4/-5 bp.  
 `bws`: bw files.  
+`qc`: frag_size/tss_enrichment/frip qc metrics.  
 
 
 
