@@ -2,7 +2,7 @@
 Nextflow pipeline for bulk ATAC-seq
 
 ## Introduction ##
-The pipeline uses cutadapt to remove nextera adaptors, aligns fastqs with bowtie2, remove PCR duplicates with picard, call peaks with macs2, generate fragment bed files with bedtools and genome track files (bw) with bedGraphToBigWig.
+The pipeline uses cutadapt to remove nextera adaptors, aligns fastqs with bowtie2, remove PCR duplicates with picard, call peaks with macs3, generate fragment bed files with bedtools and genome track files (bw) with bedGraphToBigWig.
 
 ## Software dependencies ##
 Dependencies  | Version
@@ -16,12 +16,13 @@ samtools | 1.18
 bowtie2 | 2.5.1
 bedtools | 2.31.0
 picard | 3.4.0
-macs2 | 2.2.9.1
+macs3 | 3.0.4
 bedGraphToBigWig | 2.10
 matplotlib | 3.10.8
 pandas | 3.0.2
 numpy | 2.4.3
 
+__Critical: new pipeline is using macs3 instead of macs2!__
 If genome coverage files (.bw) are desired, please install bedGraphToBigWig manually (or with conda), and get the chromsize file from UCSC (download or using fetchChromSizes).
 
 ## Installation ##
@@ -54,7 +55,7 @@ nextflow run atacseq_pe.nf \
   --genome hg38 \
   --genomeDir bowtie2_index \
   --input_csv samplesheet.csv \
-  --run_macs2 true \
+  --run_macs3 true \
   --gsize hs \
   --make_bw true \
   --chromsize hg38.chrom.sizes \
@@ -68,7 +69,7 @@ nextflow run atacseq_pe.nf \
 `--input_csv`: Path to samplesheet.csv as described in **step (1)**.  
 `--genome`: the genome prefix of the outputs.  
 `--genomeDir`: path to bowtie2 index.  
-If `--run_macs2` is set to true, `--gsize` must be set as input for the `-g` parameter of `macs2 callpeak`.  
+If `--run_macs3` is set to true, `--gsize` must be set as input for the `-g` parameter of `macs3 callpeak`.  
 If `--make_bw` is set to true, `--chromsize` must be set as input for `bedtools genomecov` and `bedGraphToBigWig`. Refer to hg38.chrom.sizes in the repository.  
 If `--calc_tss` is set to true, TSS enrichment will be calculated, and `--tss_file` must be set in parallel. Refer to the __utils__ folder in the repository. For hg38, use hg38_ArchR_TSS.tsv. For mm10, use mm10_ArchR_TSS.tsv. All given coordinates in the tsv file are 1-based.  
 
@@ -79,8 +80,8 @@ The pipeline creates subfolders (named by samples in the samplesheet) in -output
 `fastqs`: Merged fastqs.  
 `cutadapt`: Trimmed fastqs.  
 `bowtie2`: Aligned (and filtered) bams. PCR duplicates are marked with picard.  
-`macs2`: Results of peak calling.  
-`fragments`: Fragment files, and fraglen/tss qc metrics. __Note__: the start and end coordinates of *_fragments.tsv files have been shifted by +4/-5 bp.  
+`peaks`: Results of peak calling.  
+`fragments`: Fragment files, and fraglen/tss/frip qc metrics. __Note__: the start and end coordinates of *_fragments.tsv files have been shifted by +4/-5 bp.  
 `bws`: bw files.  
 
 
