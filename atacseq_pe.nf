@@ -10,7 +10,7 @@ params.genome = "hg38"
 params.genomeBaseDir = "/data/xrz/ref"
 params.genomeDir = "${params.genomeBaseDir}/${params.genome}/${params.genome}-bowtie2/${params.genome}"
 params.input_csv = '/data/xrz/LXYdata/nextflow/samplesheet.csv'
-params.run_masc2 = false
+params.run_masc3 = true
 params.gsize = 'hs'
 // params.gsize = 3182
 params.make_bw = false 
@@ -163,8 +163,8 @@ process FILTERBAM {
 }
 
 
-process MACS2 {
-    tag "Peak calling on ${bam} with macs2"
+process MACS3 {
+    tag "Peak calling on ${bam} with macs3"
 
     input:
     val genome
@@ -172,11 +172,12 @@ process MACS2 {
 
     output:
     tuple val(meta), path("*${genome}_peaks*"), emit: called_peaks
+    tuple val(meta), path("${meta.id}_${genome}_peaks.narrowPeak"), emit: narrowpeak
     
     script:
 
     """
-    macs2 callpeak \
+    macs3 callpeak \
         -f BAM \
         -g ${params.gsize} \
         -q 0.05 \
@@ -185,6 +186,67 @@ process MACS2 {
         -n ${meta.id}_${genome}
     """
 
+}
+
+process FRIP {
+    tag "Peak calling on ${bam} with macs2"
+
+    input:
+    val genome
+    tuple val(meta), path(bam)
+    tuple val(meta), path(narrowpeak)
+
+    output:
+    tuple val(meta), path("*_frip.png"), path("*_frip.txt"), emit: frip
+
+    script:
+
+    """
+    total_reads=\$(samtools view -c ${bam})
+
+    peak_reads=\$(
+        bedtools sort -i ${narrowpeak} | \
+        bedtools merge -i stdin | \
+        bedtools intersect -u -nonamecheck -a ${bam} -b stdin -ubam | \
+        samtools view -c
+    )
+
+    frip=\$(echo "\$peak_reads \$total_reads" | awk '{printf "%.4f", \$1/\$2}')
+
+    sample="${meta.id}"
+    echo -e "Sample\\tTotalReads\\tPeakReads\\tFRIP" > ${meta.id}_frip.txt
+    echo -e "\${sample}\\t\${total_reads}\\t\${peak_reads}\\t\${frip}" >> ${meta.id}_frip.txt
+
+    cat > plot_frip.py << 'EOF'
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    df = pd.read_csv("${meta.id}_frip.txt", sep="\t")
+
+    sample = df["Sample"][0]
+    frip = df["FRIP"][0]
+    non_frip = 1 - frip
+
+    plt.figure(figsize=(4, 4))
+    plt.bar(sample, frip,  color="#afdd8b")
+    plt.bar(sample, non_frip, bottom = frip, color="#f0f0f0")
+
+
+    plt.ylabel("Fraction of reads in peaks")
+    plt.ylim(0, 1)
+    plt.title("FRIP")
+
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+
+    plt.tight_layout()
+    plt.savefig("${meta.id}_frip.png", dpi=150)
+    plt.close()
+    EOF
+
+    python plot_frip.py
+
+    """
 }
 
 process MAKEFRAGMENT {
@@ -288,7 +350,7 @@ process PLOTTSS {
 
     script:
     """    
-    python ${pyscript_tss_enrichment} -i ${tsv} -t ${params.tss_file} -o ${meta.id}_${genome} -p ${task.cpus}
+    python ${pyscript_tss_enrichment} -i ${tsv} -t ${params.tss_file} -o ${meta.id}_${genome} -p 32
     """   
 }
 
@@ -344,10 +406,13 @@ workflow {
     SORTBAM(genome_basename, ADDREPLACERG.out.rgtagged_bam)
     MARKDUPLICATE(genome_basename, SORTBAM.out.sorted_bam)
     FILTERBAM(genome_basename, MARKDUPLICATE.out.markdup_bam)
-    if(params.run_masc2){
-        called_peaks = MACS2(genome_basename, FILTERBAM.out.filtered_bam)
+    if(params.run_masc3){
+        MACS3(genome_basename, FILTERBAM.out.filtered_bam)
+        called_peaks = MACS3.out.called_peaks
+        ch_frip = FRIP(genome_basename, FILTERBAM.out.filtered_bam, MACS3.out.narrowpeak)
     }else{
         called_peaks = channel.empty()
+        ch_frip = channel.empty()
     }
     MAKEFRAGMENT(genome_basename, FILTERBAM.out.filtered_bam)
     PLOTSIZE(genome_basename, MAKEFRAGMENT.out.filtfrags)
@@ -358,7 +423,7 @@ workflow {
         ch_bw = channel.empty()
     }
     if(params.calc_tss){
-        ch_tss = PLOTTSS(genome_basename, MAKEFRAGMENT.out.nofiltfrags, "${projectDir}/../utils/tss_enrichment.py")
+        ch_tss = PLOTTSS(genome_basename, MAKEFRAGMENT.out.nofiltfrags, "${projectDir}/utils/tss_enrichment.py")
     }else{
         ch_tss = channel.empty()
     }
@@ -373,12 +438,13 @@ workflow {
     markdup_bams = MARKDUPLICATE.out.markdup_bam
     filtdup_bams = FILTERBAM.out.filtered_bam
     out_peaks = called_peaks
+    out_frip = ch_frip
     filtfrags = MAKEFRAGMENT.out.filtfrags
     nofiltfrags = MAKEFRAGMENT.out.nofiltfrags
     bws = ch_bw
     fragsize_plots = PLOTSIZE.out.fragsize_plots
     fragsize_txt = PLOTSIZE.out.length_counts
-    tss_out = ch_tss
+    out_tss = ch_tss
 
 }
 
@@ -402,7 +468,10 @@ output {
         path { meta, _f1 -> "${meta.id}/bowtie2" }
     }
     out_peaks {
-        path { meta, _f1 -> "${meta.id}/macs2" }
+        path { meta, _f1 -> "${meta.id}/peaks" }
+    }
+    out_frip {
+        path { meta, _f1, _f2 -> "${meta.id}/fragments" }
     }
     filtfrags {
         path { meta, _f1 -> "${meta.id}/fragments" }
@@ -419,7 +488,7 @@ output {
     bws {
         path { meta, _f1 -> "${meta.id}/bws" }
     }
-    tss_out {
+    out_tss {
         path { meta, _f1, _f2 -> "${meta.id}/fragments" }
     }
 
