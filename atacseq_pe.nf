@@ -194,7 +194,7 @@ process FRIP {
     input:
     val genome
     tuple val(meta), path(bam)
-    tuple val(meta), path(narrowpeak)
+    tuple val(meta2), path(narrowpeak)
 
     output:
     tuple val(meta), path("*_frip.png"), path("*_frip.txt"), emit: frip
