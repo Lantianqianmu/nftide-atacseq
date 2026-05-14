@@ -288,7 +288,7 @@ process PLOTTSS {
 
     script:
     """    
-    python ${pyscript_tss_enrichment} -i ${tsv} -t ${params.tss_file} -o ${meta.id}_${genome} -p 16
+    python ${pyscript_tss_enrichment} -i ${tsv} -t ${params.tss_file} -o ${meta.id}_${genome} -p ${task.cpus}
     """   
 }
 
