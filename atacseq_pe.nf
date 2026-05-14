@@ -15,7 +15,8 @@ params.gsize = 'hs'
 // params.gsize = 3182
 params.make_bw = false 
 params.chromsize = '/data/xrz/charseq/nftide-atacseq/hg38.chrom.sizes'
-
+params.calc_tss = true 
+params.tss_file = "${params.genomeBaseDir}/${params.genome}/${params.genome}_ArchR_TSS.tsv"
 
 process MERGE_FQ {
     tag "Merging fastq files of ${meta.id}..."
@@ -274,6 +275,23 @@ process MAKEBW {
     """
 }
 
+process PLOTTSS {
+    tag "Calculating TSS enrichment from ${tsv}"
+
+    input:
+    val genome
+    tuple val(meta), path(tsv)
+    path pyscript_tss_enrichment
+
+    output:
+    tuple val(meta), path("*_tss_enrichment.png"), path("*_tss_enrichment.txt"), emit: tss_enrichment
+
+    script:
+    """    
+    python ${pyscript_tss_enrichment} -i ${tsv} -t ${params.tss_file} -o ${meta.id}_${genome} -p 16
+    """   
+}
+
 
 workflow {
     main:
@@ -339,6 +357,12 @@ workflow {
     }else{
         ch_bw = channel.empty()
     }
+    if(params.calc_tss){
+        ch_tss = PLOTTSS(genome_basename, MAKEFRAGMENT.out.nofiltfrags, "${projectDir}/../utils/tss_enrichment.py")
+    }else{
+        ch_tss = channel.empty()
+    }
+
     
 
     publish:
@@ -349,12 +373,12 @@ workflow {
     markdup_bams = MARKDUPLICATE.out.markdup_bam
     filtdup_bams = FILTERBAM.out.filtered_bam
     out_peaks = called_peaks
-    // sortname_bams = MAKEFRAGMENT.out.sortname_bam
     filtfrags = MAKEFRAGMENT.out.filtfrags
     nofiltfrags = MAKEFRAGMENT.out.nofiltfrags
     bws = ch_bw
     fragsize_plots = PLOTSIZE.out.fragsize_plots
     fragsize_txt = PLOTSIZE.out.length_counts
+    tss_out = ch_tss
 
 }
 
@@ -395,4 +419,8 @@ output {
     bws {
         path { meta, _f1 -> "${meta.id}/bws" }
     }
+    tss_out {
+        path { meta, _f1, _f2 -> "${meta.id}/fragments" }
+    }
+
 }
