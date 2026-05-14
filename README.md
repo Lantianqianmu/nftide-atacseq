@@ -61,7 +61,8 @@ nextflow run atacseq_pe.nf \
   --calc_tss true \
   --tss_file tssfile \
   -with-report outdir/nf_atac_report.html \
-  -with-timeline outdir/nf_atac_timeline.html
+  -with-timeline outdir/nf_atac_timeline.html \
+  -bg
 ```
 `-output-dir`: Path to the output directory.  
 `--input_csv`: Path to samplesheet.csv as described in **step (1)**.  
