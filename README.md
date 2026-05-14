@@ -69,7 +69,7 @@ nextflow run atacseq_pe.nf \
 `--genomeDir`: path to bowtie2 index.  
 If `--run_macs2` is set to true, `--gsize` must be set as input for the `-g` parameter of `macs2 callpeak`.  
 If `--make_bw` is set to true, `--chromsize` must be set as input for `bedtools genomecov` and `bedGraphToBigWig`. Refer to hg38.chrom.sizes in the repository.  
-If `--calc_tss` is set to true, TSS enrichment will be calculated, and `--tss_file` must be set in parallel. Refer to the __utils__ folder in the repository. For hg38, use hg38_ArchR_TSS.tsv. For mm10, use mm10_ArchR_TSS.tsv. All given coordinates in the tsv file is 1-based.  
+If `--calc_tss` is set to true, TSS enrichment will be calculated, and `--tss_file` must be set in parallel. Refer to the __utils__ folder in the repository. For hg38, use hg38_ArchR_TSS.tsv. For mm10, use mm10_ArchR_TSS.tsv. All given coordinates in the tsv file are 1-based.  
 
 By default, the pipeline allows 2 samples to be processed in parallel. To change this behavior, modify _maxForks_ in __nextflow.config__.
 
