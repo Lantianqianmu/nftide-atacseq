@@ -417,7 +417,6 @@ workflow {
             genome_basename,
             ch_frip_in
         )
-        ch_frip = FRIP(genome_basename, FILTERBAM.out.filtered_bam, MACS3.out.narrowpeak)
     }else{
         called_peaks = channel.empty()
         ch_frip = channel.empty()
