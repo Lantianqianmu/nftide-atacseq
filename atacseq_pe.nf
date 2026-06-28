@@ -193,8 +193,9 @@ process FRIP {
 
     input:
     val genome
-    tuple val(meta), path(bam)
-    tuple val(meta2), path(narrowpeak)
+    tuple val(meta),
+          path(bam),
+          path(narrowpeak)
 
     output:
     tuple val(meta), path("*_frip.png"), path("*_frip.txt"), emit: frip
@@ -409,6 +410,13 @@ workflow {
     if(params.run_masc3){
         MACS3(genome_basename, FILTERBAM.out.filtered_bam)
         called_peaks = MACS3.out.called_peaks
+        ch_frip_in =
+            FILTERBAM.out.filtered_bam
+                .join(MACS3.out.narrowpeak, by:0)
+         ch_frip = FRIP(
+            genome_basename,
+            ch_frip_in
+        )
         ch_frip = FRIP(genome_basename, FILTERBAM.out.filtered_bam, MACS3.out.narrowpeak)
     }else{
         called_peaks = channel.empty()
